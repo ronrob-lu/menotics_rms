@@ -1,3 +1,12 @@
+# 🚨 ⚠️ CRITICAL WARNING / KRITISCHE WARNUNG ⚠️ 🚨
+
+> [!CAUTION]
+> ### 🛑 SEVERE BUG 🛑
+> 
+>  iteration of the code has a severe bug that floods the entire Luanti world. **DO NOT use on live servers and ALWAYS make a backup beforehand!**
+
+---
+
 # RMS Menotics Cruise Ship Mod (`rms_menotics`) for Luanti / Minetest
 
 **RMS Menotics** is a complete, standalone, production-ready ocean liner mod for Luanti / Minetest (supporting **Minetest Game**, **Mineclonia**, and **VoxeLibre**).
