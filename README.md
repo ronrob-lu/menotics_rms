@@ -1,9 +1,9 @@
-# 🚨 ⚠️ CRITICAL WARNING / KRITISCHE WARNUNG ⚠️ 🚨
+# 🚨 ⚠️ CRITICAL WARNING  ⚠️ 🚨
 
 > [!CAUTION]
 > ### 🛑 SEVERE BUG 🛑
 > 
->  iteration of the code has a severe bug that floods the entire Luanti world. **DO NOT use on live servers and ALWAYS make a backup beforehand!**
+>  This iteration of the code has a severe bug that floods the entire Luanti world. **DO NOT use on live servers and ALWAYS make a backup beforehand!**
 
 ---
 
