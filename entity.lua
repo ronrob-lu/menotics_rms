@@ -144,8 +144,8 @@ minetest.register_entity("rms_menotics:ship_entity", {
 	heading = 0,
 	active_nodes = nil,
 	displaced_water = nil,
-	state = "docked",
-	idle_timer = 60.0,
+	state = "cruising",
+	idle_timer = 0.0,
 	accum_step = 0.0,
 
 	on_activate = function(self, staticdata, dtime_s)
@@ -156,8 +156,8 @@ minetest.register_entity("rms_menotics:ship_entity", {
 				self.heading = data.heading or 0
 				self.active_nodes = data.active_nodes
 				self.displaced_water = data.displaced_water or {}
-				self.state = data.state or "docked"
-				self.idle_timer = data.idle_timer or 60.0
+				self.state = data.state or "cruising"
+				self.idle_timer = data.idle_timer or 0.0
 			end
 		end
 
@@ -292,8 +292,8 @@ function entity_mod.spawn_cruise_ship(pos, heading, placer)
 			luaent.heading = heading
 			luaent.active_nodes = active_nodes
 			luaent.displaced_water = displaced
-			luaent.state = "docked"
-			luaent.idle_timer = 60.0
+			luaent.state = "cruising"
+			luaent.idle_timer = 0.0
 			ent_obj:set_yaw(HEADING_YAW[heading % 4])
 		end
 

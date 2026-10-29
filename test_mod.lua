@@ -139,6 +139,17 @@ print(string.format("  -> Active nodes count: %d (generated in %.2f ms)", count,
 assert(count > 1000 and count < 15000, "Active node count out of expected bounds")
 assert(count < 22500, "Optimization failure: Spatial hash must NOT contain empty air/water nodes!")
 
+print("[TEST 4b] Command Bridge & Ship Initial Movement State")
+assert(active_nodes["0,12,32"] and active_nodes["0,12,32"].name == "rms_menotics:hull", "Bridge roof node missing")
+assert(active_nodes["0,11,36"] and active_nodes["0,11,36"].name == "rms_menotics:glass", "Bridge forward glass window missing")
+assert(active_nodes["0,10,35"] and active_nodes["0,10,35"].name == "rms_menotics:railing", "Bridge command console railing missing")
+
+local ship_ent_def = minetest.registered_entities["rms_menotics:ship_entity"]
+assert(ship_ent_def, "Ship entity not registered")
+assert(ship_ent_def.state == "cruising", "Initial entity state should be cruising")
+assert(ship_ent_def.idle_timer == 0.0, "Initial entity idle_timer should be 0.0")
+print("  -> PASSED: Command bridge nodes and cruising state verified.")
+
 print("[TEST 5] Depth Scanning & Iceberg Detection")
 -- Setup water in world
 for z = -60, 60 do

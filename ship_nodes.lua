@@ -163,6 +163,36 @@ function ship_nodes.generate_default_ship_data()
 			end
 		end
 
+		-- Command Bridge / Navigation Superstructure on Upper Forward Deck (lz between 28 and 36)
+		if lz >= 28 and lz <= 36 then
+			local bw = math.min(5, max_w - 1)
+			for lx = -bw, bw do
+				for ly = 10, 12 do
+					if ly == 12 then
+						-- Bridge Roof
+						add_node(lx, ly, lz, "rms_menotics:hull")
+					elseif ly == 11 then
+						-- Panoramic Glass Windows on front (lz=36), sides (lx=±bw), and rear (lz=28)
+						if math.abs(lx) == bw or lz == 36 or lz == 28 then
+							add_node(lx, ly, lz, "rms_menotics:glass")
+						end
+					elseif ly == 10 then
+						-- Bridge lower walls and front windows
+						if lz == 36 or math.abs(lx) == bw then
+							add_node(lx, ly, lz, "rms_menotics:glass")
+						elseif lz == 28 then
+							add_node(lx, ly, lz, "rms_menotics:hull")
+						end
+					end
+				end
+			end
+
+			-- Bridge Command Console & Steering Station inside (lz = 35)
+			for lx = -3, 3 do
+				add_node(lx, 10, 35, "rms_menotics:railing")
+			end
+		end
+
 		-- Funnels / Chimneys on Top Deck (lz = -10, lz = 5)
 		if (lz >= -12 and lz <= -8) or (lz >= 3 and lz <= 7) then
 			for lx = -2, 2 do
