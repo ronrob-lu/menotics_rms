@@ -3,8 +3,8 @@
 
 local modpath = minetest.get_modpath("rms_menotics")
 
--- Load compatibility API and node registrations
-local compat = dofile(modpath .. "/nodes.lua")
+-- Load compatibility API
+local compat = dofile(modpath .. "/compat.lua")
 
 -- Load spatial hash & block integrity engine
 local ship_nodes = dofile(modpath .. "/ship_nodes.lua")
@@ -16,9 +16,13 @@ local interactions = dofile(modpath .. "/interactions.lua")
 local sinking = dofile(modpath .. "/sinking.lua")
 
 -- Load ship entity and navigation engine
-local entity_mod = dofile(modpath .. "/entity.lua")
+rms_menotics = rms_menotics or {}
+rms_menotics.entity = dofile(modpath .. "/entity.lua")
+
+-- Load node definitions & craft items
+rms_menotics.nodes = dofile(modpath .. "/nodes.lua")
 
 -- Load global admin commands
-local commands = dofile(modpath .. "/commands.lua")
+rms_menotics.commands = dofile(modpath .. "/commands.lua")
 
 minetest.log("action", "[rms_menotics] RMS Menotics Cruise Ship Mod loaded successfully!")

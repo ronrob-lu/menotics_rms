@@ -121,11 +121,10 @@ minetest.register_craftitem("rms_menotics:cruise_ship", {
 			return itemstack
 		end
 
-		local ship_entity_module = dofile(minetest.get_modpath("rms_menotics") .. "/entity.lua")
 		local dir = placer and placer:get_look_horizontal() or 0
 		local heading_dir = math.floor((dir / (math.pi / 2)) + 0.5) % 4
 
-		local success, err = ship_entity_module.spawn_cruise_ship(pos, heading_dir, placer)
+		local success, err = rms_menotics.entity.spawn_cruise_ship(pos, heading_dir, placer)
 		if success then
 			if not minetest.settings:get_bool("creative_mode") then
 				itemstack:take_item()

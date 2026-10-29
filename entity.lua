@@ -2,6 +2,8 @@
 
 local compat = dofile(minetest.get_modpath("rms_menotics") .. "/compat.lua")
 local ship_nodes = dofile(minetest.get_modpath("rms_menotics") .. "/ship_nodes.lua")
+local sinking = dofile(minetest.get_modpath("rms_menotics") .. "/sinking.lua")
+local interactions = dofile(minetest.get_modpath("rms_menotics") .. "/interactions.lua")
 
 local entity_mod = {}
 
@@ -224,8 +226,7 @@ minetest.register_entity("rms_menotics:ship_entity", {
 				local depth_ok, depth_err = entity_mod.check_water_depth(pos, self.heading)
 
 				if status == "iceberg" then
-					local sinking_mod = dofile(minetest.get_modpath("rms_menotics") .. "/sinking.lua")
-					sinking_mod.trigger_iceberg_collision(self, hazard_pos)
+					sinking.trigger_iceberg_collision(self, hazard_pos)
 					return
 				elseif status == "obstacle" or not depth_ok then
 					self.state = "docked"
@@ -256,7 +257,6 @@ minetest.register_entity("rms_menotics:ship_entity", {
 		end
 
 		if is_pickaxe then
-			local interactions = dofile(minetest.get_modpath("rms_menotics") .. "/interactions.lua")
 			interactions.dismantle_ship(self, puncher)
 		else
 			minetest.chat_send_player(puncher:get_player_name(), "[RMS Menotics] The hull is too strong! Use a pickaxe to dismantle the vessel.")
@@ -268,7 +268,6 @@ minetest.register_entity("rms_menotics:ship_entity", {
 		local wielded = clicker:get_wielded_item()
 
 		if wielded:get_name():find("screwdriver") then
-			local interactions = dofile(minetest.get_modpath("rms_menotics") .. "/interactions.lua")
 			interactions.rotate_ship(self, clicker)
 		end
 	end,

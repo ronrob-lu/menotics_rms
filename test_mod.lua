@@ -38,6 +38,9 @@ function minetest.register_craft(def)
 end
 
 function minetest.register_entity(name, def)
+	if minetest.registered_entities[name] then
+		error("Duplicate entity registration for " .. name)
+	end
 	minetest.registered_entities[name] = def
 end
 
@@ -47,6 +50,9 @@ end
 
 function minetest.register_on_placenode(fn) end
 function minetest.register_on_dignode(fn) end
+
+function minetest.serialize(val) return "serialized_data" end
+function minetest.deserialize(str) return {} end
 
 function minetest.get_mod_storage()
 	return {
@@ -77,11 +83,10 @@ end
 
 print("=== RUNNING RMS MENOTICS UNIT TESTS ===")
 
--- 1. Load Mod Modules
-local compat = dofile("compat.lua")
-local nodes = dofile("nodes.lua")
+-- 1. Load Mod Modules via init.lua (as Minetest does)
+dofile("init.lua")
 local ship_nodes = dofile("ship_nodes.lua")
-local entity_mod = dofile("entity.lua")
+local entity_mod = rms_menotics.entity
 
 print("[TEST 1] Registered Nodes & Recipes")
 assert(minetest.registered_nodes["rms_menotics:deck"], "Deck node missing")
@@ -154,5 +159,26 @@ local status, hpos, hname = entity_mod.scan_ahead(center, 0)
 assert(status == "iceberg", "Iceberg scanning failed, status was: " .. tostring(status))
 assert(hname == "default:ice", "Hazard name mismatch")
 print("  -> PASSED: Iceberg detection & depth scanning operating properly.")
+
+print("[TEST 6] Item OnPlace callback execution without re-registering entities")
+minetest.settings = { get_bool = function() return true end }
+minetest.add_entity = function(pos, name)
+	return { get_luaentity = function() return {} end, set_yaw = function() end }
+end
+local cruise_ship_item = minetest.registered_items["rms_menotics:cruise_ship"]
+assert(cruise_ship_item and cruise_ship_item.on_place, "Cruise ship on_place missing")
+local dummy_placer = {
+	get_look_horizontal = function() return 0 end,
+	is_player = function() return true end,
+	get_player_name = function() return "Tester" end,
+}
+local pointed = {
+	type = "node",
+	under = {x = 0, y = 0, z = 0},
+	above = {x = 0, y = 1, z = 0},
+}
+-- Call on_place; if it executes dofile("entity.lua") which calls register_entity, error will be thrown
+cruise_ship_item.on_place({}, dummy_placer, pointed)
+print("  -> PASSED: on_place executed without re-registering entity.")
 
 print("=== ALL UNIT TESTS PASSED SUCCESSFULLY ===")
