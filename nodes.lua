@@ -104,6 +104,7 @@ minetest.register_craftitem("rms_menotics:cruise_ship", {
 	inventory_image = "rms_menotics_cruise_ship.png",
 	wield_image = "rms_menotics_cruise_ship.png",
 	stack_max = 1,
+	liquids_pointable = true,
 	on_place = function(itemstack, placer, pointed_thing)
 		if pointed_thing.type ~= "node" then
 			return itemstack
