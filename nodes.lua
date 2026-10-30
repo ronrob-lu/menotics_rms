@@ -98,7 +98,7 @@ minetest.register_node("rms_menotics:steering_wheel", {
 		local handled = false
 		for _, obj in pairs(minetest.luaentities) do
 			if obj and obj.name == "rms_menotics:ship_entity" and obj.object then
-				local cpos = obj.object:get_pos()
+				local cpos = obj.last_placed_pos or obj.object:get_pos()
 				if cpos and vector.distance(pos, cpos) < 60 then
 					if rms_menotics and rms_menotics.entity then
 						rms_menotics.entity.on_steering_wheel_click(obj, clicker)
@@ -137,7 +137,7 @@ minetest.register_node("rms_menotics:engine_control", {
 		local handled = false
 		for _, obj in pairs(minetest.luaentities) do
 			if obj and obj.name == "rms_menotics:ship_entity" and obj.object then
-				local cpos = obj.object:get_pos()
+				local cpos = obj.last_placed_pos or obj.object:get_pos()
 				if cpos and vector.distance(pos, cpos) < 60 then
 					if rms_menotics and rms_menotics.entity then
 						rms_menotics.entity.on_engine_control_click(obj, clicker)
