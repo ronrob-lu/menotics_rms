@@ -69,7 +69,7 @@ function interactions.dismantle_ship(entity, puncher)
 
 		if not nd.is_base_deck and nd.name ~= "rms_menotics:deck" and nd.name ~= "rms_menotics:hull" and
 		   nd.name ~= "rms_menotics:railing" and nd.name ~= "rms_menotics:glass" and
-		   nd.name ~= "rms_menotics:chair" and nd.name ~= "rms_menotics:pool_water" then
+		   nd.name ~= "rms_menotics:chair" then
 			local off = ship_nodes.local_to_world_offset(nd.lx, nd.ly, nd.lz, entity.heading)
 			local drop_pos = vector.add(pos, off)
 			minetest.add_item(drop_pos, ItemStack(nd.name))

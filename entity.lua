@@ -142,10 +142,10 @@ minetest.register_entity("rms_menotics:ship_entity", {
 
 	ship_id = nil,
 	heading = 0,
+	speed = 0.0,
 	active_nodes = nil,
 	displaced_water = nil,
-	state = "cruising",
-	idle_timer = 0.0,
+	state = "manual",
 	accum_step = 0.0,
 
 	on_activate = function(self, staticdata, dtime_s)
@@ -154,10 +154,10 @@ minetest.register_entity("rms_menotics:ship_entity", {
 			if data then
 				self.ship_id = data.ship_id
 				self.heading = data.heading or 0
+				self.speed = data.speed or 0.0
 				self.active_nodes = data.active_nodes
 				self.displaced_water = data.displaced_water or {}
-				self.state = data.state or "cruising"
-				self.idle_timer = data.idle_timer or 0.0
+				self.state = data.state or "manual"
 				self.last_placed_pos = data.last_placed_pos
 			end
 		end
@@ -177,10 +177,10 @@ minetest.register_entity("rms_menotics:ship_entity", {
 		local data = {
 			ship_id = self.ship_id,
 			heading = self.heading,
+			speed = self.speed,
 			active_nodes = self.active_nodes,
 			displaced_water = self.displaced_water,
 			state = self.state,
-			idle_timer = self.idle_timer,
 			last_placed_pos = self.last_placed_pos,
 		}
 		return minetest.serialize(data)
@@ -196,35 +196,13 @@ minetest.register_entity("rms_menotics:ship_entity", {
 
 		self.accum_step = self.accum_step + dtime
 
-		-- State 1: Docked Idle (60 seconds)
-		if self.state == "docked" then
-			self.idle_timer = self.idle_timer - dtime
-			if self.idle_timer <= 0 then
-				local status, _, _ = entity_mod.scan_ahead(pos, self.heading)
-				local depth_ok, _ = entity_mod.check_water_depth(pos, self.heading)
+		-- Manual Cruising
+		if self.accum_step >= 0.5 then
+			local step_dtime = self.accum_step
+			self.accum_step = 0.0
 
-				if status == "clear" and depth_ok then
-					compat.play_sound("rms_menotics_horn", {pos = pos, gain = 1.0, max_hear_distance = 120})
-					minetest.chat_send_all("[RMS Menotics] Horn sounds! The RMS Menotics is departing port.")
-					self.state = "cruising"
-				else
-					self.heading = (self.heading + 2) % 4
-					self.object:set_yaw(HEADING_YAW[self.heading])
-					self.idle_timer = 60.0
-					minetest.chat_send_all("[RMS Menotics] Departure path blocked. Reversing heading.")
-				end
-			end
-			return
-		end
-
-		-- State 2: Cruising (~2.2 m/s movement tick)
-		if self.state == "cruising" then
-			if self.accum_step >= 0.5 then
-				local step_dtime = self.accum_step
-				self.accum_step = 0.0
-
-				local speed = 2.2
-				local move_dist = speed * step_dtime
+			if self.speed > 0 then
+				local move_dist = self.speed * step_dtime
 				local dir = HEADING_DIRS[self.heading % 4]
 				local move_vec = vector.multiply(dir, move_dist)
 
@@ -235,8 +213,7 @@ minetest.register_entity("rms_menotics:ship_entity", {
 					sinking.trigger_iceberg_collision(self, hazard_pos)
 					return
 				elseif status == "obstacle" or not depth_ok then
-					self.state = "docked"
-					self.idle_timer = 60.0
+					self.speed = 0.0
 					if self.object.set_velocity then
 						self.object:set_velocity(vector.new(0, 0, 0))
 					end
@@ -264,6 +241,10 @@ minetest.register_entity("rms_menotics:ship_entity", {
 					self.object:set_velocity(vector.multiply(move_vec, 1 / step_dtime))
 				end
 				entity_mod.move_standing_players(pos, self.heading, move_vec)
+			else
+				if self.object.set_velocity then
+					self.object:set_velocity(vector.new(0, 0, 0))
+				end
 			end
 		end
 	end,
@@ -296,6 +277,51 @@ minetest.register_entity("rms_menotics:ship_entity", {
 	end,
 })
 
+function entity_mod.on_steering_wheel_click(entity, clicker)
+	if not entity or not entity.object or entity.state == "sinking" then return end
+	local pos = entity.last_placed_pos or entity.object:get_pos()
+	if not pos then return end
+	local old_heading = entity.heading or 0
+	local new_heading, rotated_nodes, new_displaced = ship_nodes.rotate_ship_cw(pos, old_heading, entity.active_nodes, entity.displaced_water)
+	entity.heading = new_heading
+	entity.active_nodes = rotated_nodes
+	entity.displaced_water = new_displaced
+	entity.object:set_yaw(HEADING_YAW[new_heading % 4])
+
+	local all_players = minetest.get_connected_players()
+	for _, player in ipairs(all_players) do
+		local ppos = player:get_pos()
+		local rel = vector.subtract(ppos, pos)
+		local local_off = ship_nodes.world_offset_to_local(rel, old_heading)
+		if math.abs(local_off.x) <= 8 and local_off.y >= -1 and local_off.y <= 16 and math.abs(local_off.z) <= 52 then
+			local new_rel = ship_nodes.local_to_world_offset(local_off.x, local_off.y, local_off.z, new_heading)
+			player:set_pos(vector.add(pos, new_rel))
+		end
+	end
+
+	compat.play_sound("rms_menotics_splash", {pos = pos, gain = 0.5})
+	if clicker and clicker:is_player() then
+		minetest.chat_send_player(clicker:get_player_name(), "[RMS Menotics] Heading changed.")
+	end
+end
+
+function entity_mod.on_engine_control_click(entity, clicker)
+	if not entity or not entity.object or entity.state == "sinking" then return end
+	if not entity.speed then entity.speed = 0.0 end
+	if entity.speed == 0.0 then
+		entity.speed = 1.1
+	elseif entity.speed == 1.1 then
+		entity.speed = 2.2
+	elseif entity.speed == 2.2 then
+		entity.speed = 4.4
+	else
+		entity.speed = 0.0
+	end
+	if clicker and clicker:is_player() then
+		minetest.chat_send_player(clicker:get_player_name(), "[RMS Menotics] Engine speed set to " .. entity.speed)
+	end
+end
+
 function entity_mod.spawn_cruise_ship(pos, heading, placer)
 	local spawn_pos = vector.new(pos.x, pos.y - 3, pos.z)
 	local depth_ok, err = entity_mod.check_water_depth(spawn_pos, heading)
@@ -314,10 +340,10 @@ function entity_mod.spawn_cruise_ship(pos, heading, placer)
 		if luaent then
 			luaent.ship_id = ship_id
 			luaent.heading = heading
+			luaent.speed = 0.0
 			luaent.active_nodes = active_nodes
 			luaent.displaced_water = displaced
-			luaent.state = "cruising"
-			luaent.idle_timer = 0.0
+			luaent.state = "manual"
 			luaent.last_placed_pos = spawn_pos
 			ent_obj:set_yaw(HEADING_YAW[heading % 4])
 		end

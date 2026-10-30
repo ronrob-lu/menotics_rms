@@ -22,7 +22,7 @@ function sinking.trigger_iceberg_collision(entity, hazard_pos)
 
 		if not nd.is_base_deck and nd.name ~= "rms_menotics:deck" and nd.name ~= "rms_menotics:hull" and
 		   nd.name ~= "rms_menotics:railing" and nd.name ~= "rms_menotics:glass" and
-		   nd.name ~= "rms_menotics:chair" and nd.name ~= "rms_menotics:pool_water" then
+		   nd.name ~= "rms_menotics:chair" then
 
 			if nd.meta and nd.meta.inventory then
 				for listname, list in pairs(nd.meta.inventory) do

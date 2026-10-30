@@ -133,15 +133,6 @@ function ship_nodes.generate_default_ship_data()
 					add_node(lx, 10, lz, "rms_menotics:railing")
 				end
 
-				-- Outdoor Swimming Pool (lz between 10 and 20, lx between -3 and 3)
-				if lz >= 10 and lz <= 20 and math.abs(lx) <= 3 then
-					if math.abs(lx) == 3 or lz == 10 or lz == 20 then
-						add_node(lx, 9, lz, "rms_menotics:hull") -- Pool border
-					else
-						add_node(lx, 9, lz, "rms_menotics:pool_water") -- Pool water
-					end
-				end
-
 				-- Sun Deck Chairs
 				if (lz % 6 == 0) and math.abs(lx) == max_w - 1 then
 					local facedir = (lx < 0) and 3 or 1
@@ -189,7 +180,13 @@ function ship_nodes.generate_default_ship_data()
 
 			-- Bridge Command Console & Steering Station inside (lz = 35)
 			for lx = -3, 3 do
-				add_node(lx, 10, 35, "rms_menotics:railing")
+				if lx == 0 then
+					add_node(lx, 10, 35, "rms_menotics:steering_wheel")
+				elseif lx == 1 then
+					add_node(lx, 10, 35, "rms_menotics:engine_control")
+				else
+					add_node(lx, 10, 35, "rms_menotics:railing")
+				end
 			end
 		end
 
