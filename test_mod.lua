@@ -94,7 +94,6 @@ assert(minetest.registered_nodes["rms_menotics:railing"], "Railing node missing"
 assert(minetest.registered_nodes["rms_menotics:hull"], "Hull node missing")
 assert(minetest.registered_nodes["rms_menotics:glass"], "Glass node missing")
 assert(minetest.registered_nodes["rms_menotics:chair"], "Chair node missing")
-assert(minetest.registered_nodes["rms_menotics:pool_water"], "Pool water node missing")
 assert(minetest.registered_items["rms_menotics:cruise_ship"], "Cruise ship item missing")
 assert(#minetest.registered_crafts > 0, "Crafting recipe missing")
 print("  -> PASSED: All nodes and items registered successfully.")
@@ -142,13 +141,15 @@ assert(count < 22500, "Optimization failure: Spatial hash must NOT contain empty
 print("[TEST 4b] Command Bridge & Ship Initial Movement State")
 assert(active_nodes["0,12,32"] and active_nodes["0,12,32"].name == "rms_menotics:hull", "Bridge roof node missing")
 assert(active_nodes["0,11,36"] and active_nodes["0,11,36"].name == "rms_menotics:glass", "Bridge forward glass window missing")
-assert(active_nodes["0,10,35"] and active_nodes["0,10,35"].name == "rms_menotics:railing", "Bridge command console railing missing")
+assert(active_nodes["0,10,35"] and active_nodes["0,10,35"].name == "rms_menotics:steering_wheel", "Bridge command console steering wheel missing")
+assert(active_nodes["1,10,35"] and active_nodes["1,10,35"].name == "rms_menotics:engine_control", "Bridge command console engine control missing")
+assert(active_nodes["2,10,35"] and active_nodes["2,10,35"].name == "rms_menotics:railing", "Bridge command console railing missing")
 
 local ship_ent_def = minetest.registered_entities["rms_menotics:ship_entity"]
 assert(ship_ent_def, "Ship entity not registered")
-assert(ship_ent_def.state == "cruising", "Initial entity state should be cruising")
-assert(ship_ent_def.idle_timer == 0.0, "Initial entity idle_timer should be 0.0")
-print("  -> PASSED: Command bridge nodes and cruising state verified.")
+assert(ship_ent_def.state == "manual", "Initial entity state should be manual")
+assert(ship_ent_def.speed == 0.0, "Initial entity speed should be 0.0")
+print("  -> PASSED: Command bridge nodes and manual state verified.")
 
 print("[TEST 5] Depth Scanning & Iceberg Detection")
 -- Setup water in world

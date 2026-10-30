@@ -76,26 +76,82 @@ minetest.register_node("rms_menotics:chair", {
 	is_ground_content = false,
 })
 
--- Register Pool Water Node
-minetest.register_node("rms_menotics:pool_water", {
-	description = "RMS Menotics Pool Water",
-	drawtype = "liquid",
-	tiles = {"rms_menotics_pool_water.png"},
-	use_texture_alpha = "blend",
+-- Register Steering Wheel Node
+minetest.register_node("rms_menotics:steering_wheel", {
+	description = "RMS Menotics Steering Wheel",
+	drawtype = "nodebox",
+	tiles = {"rms_menotics_hull.png"}, -- reuse a suitable texture
 	paramtype = "light",
-	walkable = false,
-	pointable = false,
-	diggable = false,
-	buildable_to = true,
+	paramtype2 = "facedir",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.2, -0.5, -0.2, 0.2, 0.5, 0.2},
+			{-0.4, 0.1, -0.4, 0.4, 0.5, 0.4},
+		}
+	},
+	groups = {snappy = 2, choppy = 2, ship_furniture = 1},
+	sounds = compat.get_sounds("wood"),
 	is_ground_content = false,
-	drop = "",
-	drowning = 1,
-	liquidtype = "source",
-	liquid_alternative_flowing = "rms_menotics:pool_water",
-	liquid_alternative_source = "rms_menotics:pool_water",
-	liquid_viscosity = 1,
-	post_effect_color = {a = 120, r = 30, g = 120, b = 200},
-	groups = {water = 3, liquid = 3, cools_lava = 1},
+	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+		if not clicker or not clicker:is_player() then return itemstack end
+		local handled = false
+		for _, obj in pairs(minetest.luaentities) do
+			if obj and obj.name == "rms_menotics:ship_entity" and obj.object then
+				local cpos = obj.object:get_pos()
+				if cpos and vector.distance(pos, cpos) < 60 then
+					if rms_menotics and rms_menotics.entity then
+						rms_menotics.entity.on_steering_wheel_click(obj, clicker)
+						handled = true
+						break
+					end
+				end
+			end
+		end
+		if not handled then
+			minetest.chat_send_player(clicker:get_player_name(), "[RMS Menotics] Steering wheel is not connected to a functioning ship.")
+		end
+		return itemstack
+	end,
+})
+
+-- Register Engine Control Node
+minetest.register_node("rms_menotics:engine_control", {
+	description = "RMS Menotics Engine Telegraph",
+	drawtype = "nodebox",
+	tiles = {"rms_menotics_hull.png"}, -- reuse a suitable texture
+	paramtype = "light",
+	paramtype2 = "facedir",
+	node_box = {
+		type = "fixed",
+		fixed = {
+			{-0.2, -0.5, -0.2, 0.2, 0.3, 0.2},
+			{-0.3, 0.3, -0.1, 0.3, 0.5, 0.1},
+		}
+	},
+	groups = {snappy = 2, choppy = 2, ship_furniture = 1},
+	sounds = compat.get_sounds("metal"),
+	is_ground_content = false,
+	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
+		if not clicker or not clicker:is_player() then return itemstack end
+		local handled = false
+		for _, obj in pairs(minetest.luaentities) do
+			if obj and obj.name == "rms_menotics:ship_entity" and obj.object then
+				local cpos = obj.object:get_pos()
+				if cpos and vector.distance(pos, cpos) < 60 then
+					if rms_menotics and rms_menotics.entity then
+						rms_menotics.entity.on_engine_control_click(obj, clicker)
+						handled = true
+						break
+					end
+				end
+			end
+		end
+		if not handled then
+			minetest.chat_send_player(clicker:get_player_name(), "[RMS Menotics] Engine telegraph is not connected to a functioning ship.")
+		end
+		return itemstack
+	end,
 })
 
 -- Register RMS Menotics Cruise Ship Item
