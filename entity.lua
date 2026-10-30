@@ -23,17 +23,18 @@ local HEADING_YAW = {
 }
 
 -- Check if there is at least 5 blocks of open water under the hull along the ship length
+-- Check if there is at least 3 blocks of open water under the hull along the ship length
 function entity_mod.check_water_depth(center_pos, heading)
 	local dir = HEADING_DIRS[heading % 4]
 	local check_points = {-40, -20, 0, 20, 40}
 
 	for _, offset_z in ipairs(check_points) do
 		local check_center = vector.add(center_pos, vector.multiply(dir, offset_z))
-		for depth = 1, 5 do
+		for depth = 1, 3 do
 			local test_pos = vector.new(check_center.x, center_pos.y - depth, check_center.z)
 			local node = minetest.get_node_or_nil(test_pos)
 			if not node or not compat.is_water(node.name) then
-				return false, "Insufficient water depth! Minimum 5 blocks of open water required under hull."
+				return false, "Insufficient water depth! Minimum 3 blocks of open water required under hull."
 			end
 		end
 	end
@@ -133,10 +134,9 @@ minetest.register_entity("rms_menotics:ship_entity", {
 	initial_properties = {
 		physical = false,
 		collisionbox = {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
-		visual = "mesh",
-		mesh = "cruiseship.obj",
+		visual = "sprite",
 		textures = {"colormap.png"},
-		visual_size = {x = 5.5, y = 2.2, z = 5.5},
+		visual_size = {x = 0, y = 0, z = 0},
 		static_save = true,
 	},
 
@@ -231,7 +231,19 @@ minetest.register_entity("rms_menotics:ship_entity", {
 				elseif status == "obstacle" or not depth_ok then
 					self.state = "docked"
 					self.idle_timer = 60.0
+					if self.object.set_velocity then
+						self.object:set_velocity(vector.new(0, 0, 0))
+					end
 					compat.play_sound("rms_menotics_horn", {pos = pos, gain = 0.8, max_hear_distance = 80})
+					return
+				end
+
+				-- Flood check mechanic: Check if water entered the bottom hull
+				local flood_off = ship_nodes.local_to_world_offset(0, 1, 0, self.heading)
+				local flood_pos = vector.add(pos, flood_off)
+				local flood_node = minetest.get_node_or_nil(flood_pos)
+				if flood_node and compat.is_water(flood_node.name) then
+					sinking.trigger_iceberg_collision(self, flood_pos)
 					return
 				end
 
@@ -240,6 +252,9 @@ minetest.register_entity("rms_menotics:ship_entity", {
 				self.displaced_water = ship_nodes.move_ship_in_world(pos, new_pos, self.heading, self.active_nodes, self.displaced_water)
 
 				self.object:set_pos(new_pos)
+				if self.object.set_velocity then
+					self.object:set_velocity(vector.multiply(move_vec, 1 / step_dtime))
+				end
 				entity_mod.move_standing_players(pos, self.heading, move_vec)
 			end
 		end
@@ -274,7 +289,8 @@ minetest.register_entity("rms_menotics:ship_entity", {
 })
 
 function entity_mod.spawn_cruise_ship(pos, heading, placer)
-	local depth_ok, err = entity_mod.check_water_depth(pos, heading)
+	local spawn_pos = vector.new(pos.x, pos.y - 3, pos.z)
+	local depth_ok, err = entity_mod.check_water_depth(spawn_pos, heading)
 	if not depth_ok then
 		return false, err
 	end
@@ -282,9 +298,9 @@ function entity_mod.spawn_cruise_ship(pos, heading, placer)
 	local ship_id = "ship_" .. os.time() .. "_" .. math.random(1000, 9999)
 	local active_nodes = ship_nodes.generate_default_ship_data()
 
-	local displaced = ship_nodes.place_ship_in_world(pos, heading, active_nodes, {})
+	local displaced = ship_nodes.place_ship_in_world(spawn_pos, heading, active_nodes, {})
 
-	local ent_obj = minetest.add_entity(pos, "rms_menotics:ship_entity")
+	local ent_obj = minetest.add_entity(spawn_pos, "rms_menotics:ship_entity")
 	if ent_obj then
 		local luaent = ent_obj:get_luaentity()
 		if luaent then
@@ -302,11 +318,11 @@ function entity_mod.spawn_cruise_ship(pos, heading, placer)
 		if storage then
 			local ships_data = storage:get_string("ships_list")
 			local ships = (ships_data and ships_data ~= "") and minetest.deserialize(ships_data) or {}
-			table.insert(ships, {id = ship_id, pos = pos, heading = heading})
+			table.insert(ships, {id = ship_id, pos = spawn_pos, heading = heading})
 			storage:set_string("ships_list", minetest.serialize(ships))
 		end
 
-		compat.play_sound("rms_menotics_horn", {pos = pos, gain = 1.0, max_hear_distance = 100})
+		compat.play_sound("rms_menotics_horn", {pos = spawn_pos, gain = 1.0, max_hear_distance = 100})
 		return true, nil
 	end
 

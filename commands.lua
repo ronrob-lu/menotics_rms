@@ -21,13 +21,18 @@ local function clear_all_ships(name)
 			if minetest.emerge_area then
 				minetest.emerge_area(
 					vector.add(pos, vector.new(-60, -10, -60)),
-					vector.add(pos, vector.new(60, 20, 60))
+					vector.add(pos, vector.new(60, 20, 60)),
+					function(blockpos, action, calls_remaining, calls_made)
+						if calls_remaining == 0 then
+							local active_nodes = ship_nodes.generate_default_ship_data()
+							ship_nodes.clear_ship_from_world(pos, heading, active_nodes, {})
+						end
+					end
 				)
+			else
+				local active_nodes = ship_nodes.generate_default_ship_data()
+				ship_nodes.clear_ship_from_world(pos, heading, active_nodes, {})
 			end
-
-			-- Generate default ship data or clear world at position
-			local active_nodes = ship_nodes.generate_default_ship_data()
-			ship_nodes.clear_ship_from_world(pos, heading, active_nodes, {})
 			count = count + 1
 		end
 	end
