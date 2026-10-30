@@ -9,7 +9,7 @@ local interactions = {}
 function interactions.rotate_ship(entity, clicker)
 	if not entity or not entity.object or entity.state == "sinking" then return end
 
-	local pos = entity.object:get_pos()
+	local pos = entity.last_placed_pos or entity.object:get_pos()
 	if not pos then return end
 
 	local old_heading = entity.heading or 0
@@ -50,7 +50,7 @@ end
 function interactions.dismantle_ship(entity, puncher)
 	if not entity or not entity.object or entity.state == "sinking" then return end
 
-	local pos = entity.object:get_pos()
+	local pos = entity.last_placed_pos or entity.object:get_pos()
 	if not pos then return end
 
 	-- Drop inventory contents / custom items
