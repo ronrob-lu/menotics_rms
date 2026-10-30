@@ -158,11 +158,16 @@ minetest.register_entity("rms_menotics:ship_entity", {
 				self.displaced_water = data.displaced_water or {}
 				self.state = data.state or "cruising"
 				self.idle_timer = data.idle_timer or 0.0
+				self.last_placed_pos = data.last_placed_pos
 			end
 		end
 
 		if not self.active_nodes then
 			self.active_nodes = ship_nodes.generate_default_ship_data()
+		end
+
+		if not self.last_placed_pos then
+			self.last_placed_pos = self.object:get_pos()
 		end
 
 		self.object:set_yaw(HEADING_YAW[self.heading % 4])
@@ -176,6 +181,7 @@ minetest.register_entity("rms_menotics:ship_entity", {
 			displaced_water = self.displaced_water,
 			state = self.state,
 			idle_timer = self.idle_timer,
+			last_placed_pos = self.last_placed_pos,
 		}
 		return minetest.serialize(data)
 	end,
@@ -248,8 +254,10 @@ minetest.register_entity("rms_menotics:ship_entity", {
 				end
 
 				-- Highly optimized movement: translate spatial active nodes only!
-				local new_pos = vector.add(pos, move_vec)
-				self.displaced_water = ship_nodes.move_ship_in_world(pos, new_pos, self.heading, self.active_nodes, self.displaced_water)
+				local base_pos = self.last_placed_pos or pos
+				local new_pos = vector.add(base_pos, move_vec)
+				self.displaced_water = ship_nodes.move_ship_in_world(base_pos, new_pos, self.heading, self.active_nodes, self.displaced_water)
+				self.last_placed_pos = new_pos
 
 				self.object:set_pos(new_pos)
 				if self.object.set_velocity then
@@ -310,6 +318,7 @@ function entity_mod.spawn_cruise_ship(pos, heading, placer)
 			luaent.displaced_water = displaced
 			luaent.state = "cruising"
 			luaent.idle_timer = 0.0
+			luaent.last_placed_pos = spawn_pos
 			ent_obj:set_yaw(HEADING_YAW[heading % 4])
 		end
 

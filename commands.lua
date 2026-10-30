@@ -91,4 +91,38 @@ minetest.register_chatcommand("delete_cruise", {
 	end,
 })
 
+
+minetest.register_chatcommand("save_menotics_we", {
+	description = "Saves the default RMS Menotics cruise ship schema to a WorldEdit (.we) file.",
+	privs = {server = true},
+	func = function(name, param)
+		local active_nodes = ship_nodes.generate_default_ship_data()
+		local we_data = {}
+
+		for key, nd in pairs(active_nodes) do
+			table.insert(we_data, {
+				x = nd.lx,
+				y = nd.ly,
+				z = nd.lz,
+				name = nd.name,
+				param1 = nd.param1,
+				param2 = nd.param2,
+				meta = nd.meta,
+			})
+		end
+
+		local we_str = minetest.serialize(we_data)
+		local filepath = minetest.get_worldpath() .. "/rms_menotics.we"
+		local f = io.open(filepath, "w")
+		if f then
+			f:write(we_str)
+			f:close()
+			minetest.chat_send_player(name, "[RMS Menotics] Successfully saved cruise ship schema to " .. filepath)
+		else
+			minetest.chat_send_player(name, "[RMS Menotics] Failed to open file for writing: " .. filepath)
+		end
+		return true
+	end,
+})
+
 return commands
