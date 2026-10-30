@@ -300,9 +300,93 @@ function ship_nodes.clear_ship_from_world(ship_center_pos, heading, active_nodes
 end
 
 -- Fast translation from old_pos to new_pos (only iterates active_nodes!)
+-- True Delta Update: Only translates the footprint without cascading water updates
 function ship_nodes.move_ship_in_world(old_pos, new_pos, heading, active_nodes, displaced_water)
-	ship_nodes.clear_ship_from_world(old_pos, heading, active_nodes, displaced_water)
-	local new_displaced = ship_nodes.place_ship_in_world(new_pos, heading, active_nodes, {})
+	old_pos = vector.new(math.floor(old_pos.x + 0.5), math.floor(old_pos.y + 0.5), math.floor(old_pos.z + 0.5))
+	new_pos = vector.new(math.floor(new_pos.x + 0.5), math.floor(new_pos.y + 0.5), math.floor(new_pos.z + 0.5))
+	local new_displaced = {}
+	displaced_water = displaced_water or {}
+
+	-- 1. Delta pass for active nodes
+	for key, nd in pairs(active_nodes) do
+		-- Record/Place new
+		local new_off = ship_nodes.local_to_world_offset(nd.lx, nd.ly, nd.lz, heading)
+		local new_wpos = vector.add(new_pos, new_off)
+		local new_wkey = new_wpos.x .. "," .. new_wpos.y .. "," .. new_wpos.z
+
+		local current_node = minetest.get_node_or_nil(new_wpos)
+		if current_node and compat.is_water(current_node.name) then
+			new_displaced[new_wkey] = current_node.name
+		elseif displaced_water[new_wkey] then
+			new_displaced[new_wkey] = displaced_water[new_wkey]
+		end
+
+		if current_node and current_node.name ~= nd.name then
+			minetest.set_node(new_wpos, {name = nd.name, param1 = nd.param1, param2 = nd.param2})
+			if nd.meta then
+				local meta = minetest.get_meta(new_wpos)
+				if meta then meta:from_table(nd.meta) end
+			end
+		end
+
+		-- Clear old trailing edge
+		local old_off = ship_nodes.local_to_world_offset(nd.lx, nd.ly, nd.lz, heading)
+		local old_wpos = vector.add(old_pos, old_off)
+		local old_wkey = old_wpos.x .. "," .. old_wpos.y .. "," .. old_wpos.z
+
+		local is_in_new = false
+		local rel = vector.subtract(old_wpos, new_pos)
+		local check_local = ship_nodes.world_offset_to_local(rel, heading)
+		local check_key = check_local.x .. "," .. check_local.y .. "," .. check_local.z
+		if active_nodes[check_key] then is_in_new = true end
+
+		if not is_in_new then
+			local restore = displaced_water[old_wkey] or "air"
+			minetest.set_node(old_wpos, {name = restore})
+		end
+	end
+
+	-- 2. Delta pass for internal air cavity
+	for lz = -48, 47 do
+		for ly = 1, 8 do
+			for lx = -6, 6 do
+				local key = lx .. "," .. ly .. "," .. lz
+				if not active_nodes[key] then
+					local new_off = ship_nodes.local_to_world_offset(lx, ly, lz, heading)
+					local new_wpos = vector.add(new_pos, new_off)
+					local new_wkey = new_wpos.x .. "," .. new_wpos.y .. "," .. new_wpos.z
+					local current = minetest.get_node_or_nil(new_wpos)
+
+					-- Remove water in leading edge
+					local rel_old = vector.subtract(new_wpos, old_pos)
+					local old_local = ship_nodes.world_offset_to_local(rel_old, heading)
+					local was_in_old_cavity = (old_local.x >= -6 and old_local.x <= 6 and old_local.y >= 1 and old_local.y <= 8 and old_local.z >= -48 and old_local.z <= 47 and not active_nodes[old_local.x .. "," .. old_local.y .. "," .. old_local.z])
+
+					if not was_in_old_cavity and current and compat.is_water(current.name) then
+						new_displaced[new_wkey] = current.name
+						minetest.set_node(new_wpos, {name = "air"})
+					end
+
+					-- Restore water in trailing edge
+					local old_off = ship_nodes.local_to_world_offset(lx, ly, lz, heading)
+					local old_wpos = vector.add(old_pos, old_off)
+					local old_wkey = old_wpos.x .. "," .. old_wpos.y .. "," .. old_wpos.z
+
+					local rel_new = vector.subtract(old_wpos, new_pos)
+					local new_local = ship_nodes.world_offset_to_local(rel_new, heading)
+					local is_in_new_cavity = (new_local.x >= -6 and new_local.x <= 6 and new_local.y >= 1 and new_local.y <= 8 and new_local.z >= -48 and new_local.z <= 47 and not active_nodes[new_local.x .. "," .. new_local.y .. "," .. new_local.z])
+
+					if not is_in_new_cavity then
+						local restore = displaced_water[old_wkey] or "air"
+						if minetest.get_node(old_wpos).name == "air" and restore ~= "air" then
+							minetest.set_node(old_wpos, {name = restore})
+						end
+					end
+				end
+			end
+		end
+	end
+
 	return new_displaced
 end
 
