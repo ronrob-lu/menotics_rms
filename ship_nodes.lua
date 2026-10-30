@@ -79,7 +79,7 @@ function ship_nodes.generate_default_ship_data()
 
 	local function add_node(lx, ly, lz, name, param2)
 		if name == "air" or name == "ignore" then return end
-		local key = lx .. "," .. ly .. "," .. lz
+		local key = (lx + 0) .. "," .. (ly + 0) .. "," .. (lz + 0)
 		active_nodes[key] = {
 			lx = lx, ly = ly, lz = lz,
 			name = name,
@@ -99,9 +99,7 @@ function ship_nodes.generate_default_ship_data()
 
 		for lx = -max_w, max_w do
 			-- Lower Hull & Bottom (ly = 0 to 2)
-			if ly == 0 then
-				add_node(lx, 0, lz, "rms_menotics:hull")
-			end
+			add_node(lx, 0, lz, "rms_menotics:hull")
 
 			-- Hull walls on sides
 			if math.abs(lx) == max_w then
@@ -217,7 +215,7 @@ function ship_nodes.place_ship_in_world(ship_center_pos, heading, active_nodes, 
 		local current_world_node = minetest.get_node_or_nil(world_pos)
 
 		-- Record original displaced water if present
-		local wkey = world_pos.x .. "," .. world_pos.y .. "," .. world_pos.z
+		local wkey = (world_pos.x + 0) .. "," .. (world_pos.y + 0) .. "," .. (world_pos.z + 0)
 		if current_world_node and compat.is_water(current_world_node.name) then
 			new_displaced[wkey] = current_world_node.name
 		elseif displaced_water[wkey] then
@@ -244,14 +242,14 @@ function ship_nodes.place_ship_in_world(ship_center_pos, heading, active_nodes, 
 	for lz = -48, 47 do
 		for ly = 1, 8 do
 			for lx = -6, 6 do
-				local key = lx .. "," .. ly .. "," .. lz
+				local key = (lx + 0) .. "," .. (ly + 0) .. "," .. (lz + 0)
 				if not active_nodes[key] then
 					local off = ship_nodes.local_to_world_offset(lx, ly, lz, heading)
 					local world_pos = vector.add(ship_center_pos, off)
 					local current_node = minetest.get_node_or_nil(world_pos)
 
 					if current_node then
-						local wkey = world_pos.x .. "," .. world_pos.y .. "," .. world_pos.z
+						local wkey = (world_pos.x + 0) .. "," .. (world_pos.y + 0) .. "," .. (world_pos.z + 0)
 						if compat.is_water(current_node.name) then
 							new_displaced[wkey] = current_node.name
 							minetest.set_node(world_pos, {name = "air"})
@@ -273,7 +271,7 @@ function ship_nodes.clear_ship_from_world(ship_center_pos, heading, active_nodes
 	for _, nd in pairs(active_nodes) do
 		local off = ship_nodes.local_to_world_offset(nd.lx, nd.ly, nd.lz, heading)
 		local world_pos = vector.add(ship_center_pos, off)
-		local wkey = world_pos.x .. "," .. world_pos.y .. "," .. world_pos.z
+		local wkey = (world_pos.x + 0) .. "," .. (world_pos.y + 0) .. "," .. (world_pos.z + 0)
 
 		local restore_node = displaced_water[wkey] or "air"
 		minetest.set_node(world_pos, {name = restore_node})
@@ -285,7 +283,7 @@ function ship_nodes.clear_ship_from_world(ship_center_pos, heading, active_nodes
 			for lx = -6, 6 do
 				local off = ship_nodes.local_to_world_offset(lx, ly, lz, heading)
 				local world_pos = vector.add(ship_center_pos, off)
-				local wkey = world_pos.x .. "," .. world_pos.y .. "," .. world_pos.z
+				local wkey = (world_pos.x + 0) .. "," .. (world_pos.y + 0) .. "," .. (world_pos.z + 0)
 
 				local restore_node = displaced_water[wkey] or "air"
 				if minetest.get_node(world_pos).name == "air" and restore_node ~= "air" then
@@ -309,7 +307,7 @@ function ship_nodes.move_ship_in_world(old_pos, new_pos, heading, active_nodes, 
 		-- Record/Place new
 		local new_off = ship_nodes.local_to_world_offset(nd.lx, nd.ly, nd.lz, heading)
 		local new_wpos = vector.add(new_pos, new_off)
-		local new_wkey = new_wpos.x .. "," .. new_wpos.y .. "," .. new_wpos.z
+		local new_wkey = (new_wpos.x + 0) .. "," .. (new_wpos.y + 0) .. "," .. (new_wpos.z + 0)
 
 		local current_node = minetest.get_node_or_nil(new_wpos)
 		if current_node and compat.is_water(current_node.name) then
@@ -329,12 +327,12 @@ function ship_nodes.move_ship_in_world(old_pos, new_pos, heading, active_nodes, 
 		-- Clear old trailing edge
 		local old_off = ship_nodes.local_to_world_offset(nd.lx, nd.ly, nd.lz, heading)
 		local old_wpos = vector.add(old_pos, old_off)
-		local old_wkey = old_wpos.x .. "," .. old_wpos.y .. "," .. old_wpos.z
+		local old_wkey = (old_wpos.x + 0) .. "," .. (old_wpos.y + 0) .. "," .. (old_wpos.z + 0)
 
 		local is_in_new = false
 		local rel = vector.subtract(old_wpos, new_pos)
 		local check_local = ship_nodes.world_offset_to_local(rel, heading)
-		local check_key = check_local.x .. "," .. check_local.y .. "," .. check_local.z
+		local check_key = (check_local.x + 0) .. "," .. (check_local.y + 0) .. "," .. (check_local.z + 0)
 		if active_nodes[check_key] then is_in_new = true end
 
 		if not is_in_new then
@@ -347,17 +345,17 @@ function ship_nodes.move_ship_in_world(old_pos, new_pos, heading, active_nodes, 
 	for lz = -48, 47 do
 		for ly = 1, 8 do
 			for lx = -6, 6 do
-				local key = lx .. "," .. ly .. "," .. lz
+				local key = (lx + 0) .. "," .. (ly + 0) .. "," .. (lz + 0)
 				if not active_nodes[key] then
 					local new_off = ship_nodes.local_to_world_offset(lx, ly, lz, heading)
 					local new_wpos = vector.add(new_pos, new_off)
-					local new_wkey = new_wpos.x .. "," .. new_wpos.y .. "," .. new_wpos.z
+					local new_wkey = (new_wpos.x + 0) .. "," .. (new_wpos.y + 0) .. "," .. (new_wpos.z + 0)
 					local current = minetest.get_node_or_nil(new_wpos)
 
 					-- Remove water in leading edge
 					local rel_old = vector.subtract(new_wpos, old_pos)
 					local old_local = ship_nodes.world_offset_to_local(rel_old, heading)
-					local was_in_old_cavity = (old_local.x >= -6 and old_local.x <= 6 and old_local.y >= 1 and old_local.y <= 8 and old_local.z >= -48 and old_local.z <= 47 and not active_nodes[old_local.x .. "," .. old_local.y .. "," .. old_local.z])
+					local was_in_old_cavity = (old_local.x >= -6 and old_local.x <= 6 and old_local.y >= 1 and old_local.y <= 8 and old_local.z >= -48 and old_local.z <= 47 and not active_nodes[(old_local.x + 0) .. "," .. (old_local.y + 0) .. "," .. (old_local.z + 0)])
 
 					if not was_in_old_cavity and current and compat.is_water(current.name) then
 						new_displaced[new_wkey] = current.name
@@ -367,11 +365,11 @@ function ship_nodes.move_ship_in_world(old_pos, new_pos, heading, active_nodes, 
 					-- Restore water in trailing edge
 					local old_off = ship_nodes.local_to_world_offset(lx, ly, lz, heading)
 					local old_wpos = vector.add(old_pos, old_off)
-					local old_wkey = old_wpos.x .. "," .. old_wpos.y .. "," .. old_wpos.z
+					local old_wkey = (old_wpos.x + 0) .. "," .. (old_wpos.y + 0) .. "," .. (old_wpos.z + 0)
 
 					local rel_new = vector.subtract(old_wpos, new_pos)
 					local new_local = ship_nodes.world_offset_to_local(rel_new, heading)
-					local is_in_new_cavity = (new_local.x >= -6 and new_local.x <= 6 and new_local.y >= 1 and new_local.y <= 8 and new_local.z >= -48 and new_local.z <= 47 and not active_nodes[new_local.x .. "," .. new_local.y .. "," .. new_local.z])
+					local is_in_new_cavity = (new_local.x >= -6 and new_local.x <= 6 and new_local.y >= 1 and new_local.y <= 8 and new_local.z >= -48 and new_local.z <= 47 and not active_nodes[(new_local.x + 0) .. "," .. (new_local.y + 0) .. "," .. (new_local.z + 0)])
 
 					if not is_in_new_cavity then
 						local restore = displaced_water[old_wkey] or "air"

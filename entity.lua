@@ -90,12 +90,12 @@ end
 minetest.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
 	for _, obj in pairs(minetest.luaentities) do
 		if obj and obj.name == "rms_menotics:ship_entity" and obj.object then
-			local cpos = obj.object:get_pos()
+			local cpos = obj.last_placed_pos or obj.object:get_pos()
 			if cpos then
 				local rel = vector.subtract(pos, cpos)
 				local loff = ship_nodes.world_offset_to_local(rel, obj.heading or 0)
 				if math.abs(loff.x) <= 8 and loff.y >= 0 and loff.y <= 15 and math.abs(loff.z) <= 50 then
-					local key = loff.x .. "," .. loff.y .. "," .. loff.z
+					local key = (loff.x + 0) .. "," .. (loff.y + 0) .. "," .. (loff.z + 0)
 					local meta = minetest.get_meta(pos)
 					obj.active_nodes[key] = {
 						lx = loff.x, ly = loff.y, lz = loff.z,
@@ -114,12 +114,12 @@ end)
 minetest.register_on_dignode(function(pos, oldnode, digger)
 	for _, obj in pairs(minetest.luaentities) do
 		if obj and obj.name == "rms_menotics:ship_entity" and obj.object then
-			local cpos = obj.object:get_pos()
+			local cpos = obj.last_placed_pos or obj.object:get_pos()
 			if cpos then
 				local rel = vector.subtract(pos, cpos)
 				local loff = ship_nodes.world_offset_to_local(rel, obj.heading or 0)
 				if math.abs(loff.x) <= 8 and loff.y >= 0 and loff.y <= 15 and math.abs(loff.z) <= 50 then
-					local key = loff.x .. "," .. loff.y .. "," .. loff.z
+					local key = (loff.x + 0) .. "," .. (loff.y + 0) .. "," .. (loff.z + 0)
 					if obj.active_nodes[key] and not obj.active_nodes[key].is_base_deck then
 						obj.active_nodes[key] = nil
 					end
