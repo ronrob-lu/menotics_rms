@@ -1,6 +1,10 @@
 # RMS Menotics Cruise Ship Mod (`rms_menotics`) for Luanti / Minetest
 
-**RMS Menotics** is a complete, standalone, production-ready ocean liner mod for Luanti / Minetest (supporting **Minetest Game**, **Mineclonia**, and **VoxeLibre**).
+> **Notice**: Development on this mod has been stopped because the animation issue is not solvable. We are developing this further in the **CruiseShip** mod.
+>
+> *Note*: The big tsunami has been preserved as a separate mod in `tsunami_water`.
+
+**RMS Menotics** is a complete, standalone, ocean liner mod for Luanti / Minetest (supporting **Minetest Game**, **Mineclonia**, and **VoxeLibre**).
 
 It introduces a massive, majestic, 100-block long autonomous passenger cruise ship (**RMS Menotics**), featuring extensive walkable open-air decks, buildable interior cabins, moving block & luggage support, and autonomous straight-line cruising.
 
