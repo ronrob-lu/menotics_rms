@@ -47,7 +47,7 @@ minetest.register_node("rms_menotics:glass", {
 	description = "RMS Menotics Promenade Glass",
 	drawtype = "glasslike",
 	tiles = {"rms_menotics_glass.png"},
-	use_texture_alpha = "clip",
+	use_texture_alpha = "blend",
 	paramtype = "light",
 	sunlight_propagates = true,
 	groups = {snappy = 2, cracky = 3, oddly_breakable_by_hand = 3, ship_glass = 1},
