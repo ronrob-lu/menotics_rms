@@ -2,7 +2,6 @@
 
 local compat = dofile(minetest.get_modpath("rms_menotics") .. "/compat.lua")
 local ship_nodes = dofile(minetest.get_modpath("rms_menotics") .. "/ship_nodes.lua")
-local sinking = dofile(minetest.get_modpath("rms_menotics") .. "/sinking.lua")
 local interactions = dofile(minetest.get_modpath("rms_menotics") .. "/interactions.lua")
 
 local entity_mod = {}
@@ -187,10 +186,6 @@ minetest.register_entity("rms_menotics:ship_entity", {
 	end,
 
 	on_step = function(self, dtime)
-		if self.state == "sinking" then
-			return
-		end
-
 		local pos = self.object:get_pos()
 		if not pos then return end
 
@@ -209,24 +204,12 @@ minetest.register_entity("rms_menotics:ship_entity", {
 				local status, hazard_pos, hazard_name = entity_mod.scan_ahead(pos, self.heading)
 				local depth_ok, depth_err = entity_mod.check_water_depth(pos, self.heading)
 
-				if status == "iceberg" then
-					sinking.trigger_iceberg_collision(self, hazard_pos)
-					return
-				elseif status == "obstacle" or not depth_ok then
+				if status == "iceberg" or status == "obstacle" or not depth_ok then
 					self.speed = 0.0
 					if self.object.set_velocity then
 						self.object:set_velocity(vector.new(0, 0, 0))
 					end
 					compat.play_sound("rms_menotics_horn", {pos = pos, gain = 0.8, max_hear_distance = 80})
-					return
-				end
-
-				-- Flood check mechanic: Check if water entered the bottom hull
-				local flood_off = ship_nodes.local_to_world_offset(0, 1, 0, self.heading)
-				local flood_pos = vector.add(pos, flood_off)
-				local flood_node = minetest.get_node_or_nil(flood_pos)
-				if flood_node and compat.is_water(flood_node.name) then
-					sinking.trigger_iceberg_collision(self, flood_pos)
 					return
 				end
 
@@ -278,7 +261,7 @@ minetest.register_entity("rms_menotics:ship_entity", {
 })
 
 function entity_mod.on_steering_wheel_click(entity, clicker)
-	if not entity or not entity.object or entity.state == "sinking" then return end
+	if not entity or not entity.object then return end
 	local pos = entity.last_placed_pos or entity.object:get_pos()
 	if not pos then return end
 	local old_heading = entity.heading or 0
@@ -306,7 +289,7 @@ function entity_mod.on_steering_wheel_click(entity, clicker)
 end
 
 function entity_mod.on_engine_control_click(entity, clicker)
-	if not entity or not entity.object or entity.state == "sinking" then return end
+	if not entity or not entity.object then return end
 	if not entity.speed then entity.speed = 0.0 end
 	if entity.speed == 0.0 then
 		entity.speed = 1.1

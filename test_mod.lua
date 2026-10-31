@@ -170,6 +170,27 @@ world_nodes["0,1,52"] = {name = "default:ice"}
 local status, hpos, hname = entity_mod.scan_ahead(center, 0)
 assert(status == "iceberg", "Iceberg scanning failed, status was: " .. tostring(status))
 assert(hname == "default:ice", "Hazard name mismatch")
+
+-- Verify on_step halts on iceberg rather than calling sinking
+local dummy_ship_obj = {
+	pos = vector.new(0, 0, 0),
+	get_pos = function(self) return self.pos end,
+	set_pos = function(self, p) self.pos = p end,
+	set_velocity = function(self, v) self.velocity = v end,
+}
+local test_ship = {
+	object = dummy_ship_obj,
+	heading = 0,
+	speed = 2.2,
+	accum_step = 0.5,
+	state = "manual",
+	active_nodes = {},
+	displaced_water = {},
+	last_placed_pos = vector.new(0, 0, 0),
+}
+ship_ent_def.on_step(test_ship, 0.1)
+assert(test_ship.speed == 0.0, "Ship should halt on iceberg collision")
+assert(test_ship.state == "manual", "Ship state should remain manual and not transition to sinking")
 print("  -> PASSED: Iceberg detection & depth scanning operating properly.")
 
 print("[TEST 6] Item OnPlace callback execution without re-registering entities")
