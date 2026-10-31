@@ -7,7 +7,7 @@ local interactions = {}
 
 -- Screwdriver Rotation: Right-click with screwdriver rotates ship 90 degrees clockwise
 function interactions.rotate_ship(entity, clicker)
-	if not entity or not entity.object or entity.state == "sinking" then return end
+	if not entity or not entity.object then return end
 
 	local pos = entity.last_placed_pos or entity.object:get_pos()
 	if not pos then return end
@@ -48,7 +48,7 @@ end
 
 -- Pickaxe Dismantling: Safely dismantle ship, return ship item, and drop cargo/chest contents
 function interactions.dismantle_ship(entity, puncher)
-	if not entity or not entity.object or entity.state == "sinking" then return end
+	if not entity or not entity.object then return end
 
 	local pos = entity.last_placed_pos or entity.object:get_pos()
 	if not pos then return end

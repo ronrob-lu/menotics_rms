@@ -12,9 +12,6 @@ local ship_nodes = dofile(modpath .. "/ship_nodes.lua")
 -- Load player tool interactions (screwdriver rotation & pickaxe dismantling)
 local interactions = dofile(modpath .. "/interactions.lua")
 
--- Load sinking engine (iceberg collisions)
-local sinking = dofile(modpath .. "/sinking.lua")
-
 -- Load ship entity and navigation engine
 rms_menotics = rms_menotics or {}
 rms_menotics.entity = dofile(modpath .. "/entity.lua")

@@ -2,7 +2,7 @@
 
 **RMS Menotics** is a complete, standalone, production-ready ocean liner mod for Luanti / Minetest (supporting **Minetest Game**, **Mineclonia**, and **VoxeLibre**).
 
-It introduces a massive, majestic, 100-block long autonomous passenger cruise ship (**RMS Menotics**), featuring extensive walkable open-air decks, buildable interior cabins, moving block & luggage support, autonomous straight-line cruising, and catastrophic iceberg sinking mechanics.
+It introduces a massive, majestic, 100-block long autonomous passenger cruise ship (**RMS Menotics**), featuring extensive walkable open-air decks, buildable interior cabins, moving block & luggage support, and autonomous straight-line cruising.
 
 ---
 
@@ -27,15 +27,13 @@ It introduces a massive, majestic, 100-block long autonomous passenger cruise sh
 4. **Autonomous Navigation & Navigation Physics**:
    - **60-Second Dock Idle & Whistle**: Idles for 60 seconds upon placement or arrival; plays a steamship horn sound on departure.
    - **Straight-Line Cruising**: Navigates along cardinal directions at ~2.2 m/s speed.
-   - **Water Depth & Hazard Checking**: Requires at least 5 blocks of open water under the hull and scans ahead for shores or obstacles.
+   - **Water Depth & Hazard Checking**: Requires at least 3 blocks of open water under the hull and scans ahead for shores or obstacles.
 
-5. **Iceberg Collision & Catastrophic Sinking**:
-   - Actively scans ahead for ice hazards (`default:ice`, `mcl_core:packed_ice`, `mcl_core:blue_ice`, snow blocks).
-   - On collision:
-     - Converts placed custom cargo into gravity-affected falling nodes.
-     - Floods watertight hull cavity with water.
-     - Spawns animated smoke and bubble wakes.
-     - Slowly tilts and submerges entity over 15 seconds.
+5. **Obstacle & Hazard Detection**:
+   - Actively scans ahead for obstacles and ice hazards (`default:ice`, `mcl_core:packed_ice`, `mcl_core:blue_ice`, snow blocks).
+   - On obstacle or hazard detection:
+     - Halts the vessel safely.
+     - Sounds the ship horn warning.
 
 6. **Tool Interactions & Admin Commands**:
    - **Screwdriver Rotation**: Right-clicking with a screwdriver rotates the ship, cargo, and standing players 90° clockwise.
